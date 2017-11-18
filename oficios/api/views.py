@@ -166,19 +166,60 @@ def delete_remitente(request):
 
 @api_view(['POST'])
 def update_oficio(request):
-    return Response()
+    oficio_id = request.data['oficio_id']
+    date_trades = request.data['fecha_oficio']
+    description = request.data['descripcion']
+    folio = request.data['folio']
+    observations = request.data['observaciones']
+    departament_id = request.data['departamento_id']
+    sender_id = request.data['remitente_id']
+    try:
+        departament = Departments.objects.get(pk=departament_id)
+        sender = Sender.objects.get(pk=sender_id)
+        oficio = Trades.objects.get(pk=oficio_id)
+        oficio.date_trades = date_trades
+        oficio.description = description
+        oficio.folio = folio
+        oficio.observations = observations
+        oficio.departament = departament
+        oficio.sender = sender
+        oficio.save()
+        return Response({'response': 1})
+    except Departments.DoesNotExist or Sender.DoesNotExist or Trades.DoesNotExist:
+        return Response({'response': 0})
 
 
 @api_view(['POST'])
 def update_departamento(request):
-    return Response()
+    try:
+        departamento = Departments.objects.get(pk=request.data['departamento_id'])
+        name = request.data['nombre']
+        responsible = request.data['responsable']
+        departamento.name = name
+        departamento.responsible = responsible
+        departamento.save()
+        return Response({'response': 1})
+    except Departments.DoesNotExist:
+        return Response({'response': 0})
 
 
 @api_view((['POST']))
 def update_remitente(request):
-    return Response()
+    try:
+        remitente = Sender.objects.get(pk=request.data['remitente_id'])
+        name = request.data['nombre']
+        responsible = request.data['responsable']
+        remitente.name = name
+        remitente.responsible = responsible
+        remitente.save()
+        return Response({'response': 1})
+    except Sender.DoesNotExist:
+        return Response({'response': 0})
 
 
 @api_view(['GET'])
 def get_estadistics(request):
-    return Response()
+    oficios_activos = Trades.objects.filter(is_active=True)
+    total_oficios = len(oficios_activos)
+
+    return Response({'oficios_total': total_oficios})
