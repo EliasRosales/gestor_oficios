@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from datetime import datetime
 
+from django.db.models import Count
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -122,10 +123,11 @@ def set_departamento(request):
 
 @api_view((['POST']))
 def set_remitente(request):
-    name = request.data['nombre']
-    responsible = request.data['responsable']
-    Sender.objects.create(name=name, responsible=responsible)
-    return Response({'response': 1})
+    if request.method == 'POST':
+        name = request.data['nombre']
+        responsible = request.data['responsable']
+        Sender.objects.create(department=name, responsible=responsible)
+        return Response({'response': 1})
 
 
 @api_view(['POST'])
@@ -221,5 +223,7 @@ def update_remitente(request):
 def get_estadistics(request):
     oficios_activos = Trades.objects.filter(is_active=True)
     total_oficios = len(oficios_activos)
-
-    return Response({'oficios_total': total_oficios})
+    departamentos_estadisticas = Trades.objects.values('name').annotate(dcount=Count('departament'))
+    remitentes_estadisticas = Trades.objects.values('name').annotate(dcount=Count('sender'))
+    return Response({'oficios_total': total_oficios, 'departamentos_total': departamentos_estadisticas,
+                     'remitentes_total': remitentes_estadisticas})
