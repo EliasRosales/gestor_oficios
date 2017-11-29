@@ -23,6 +23,7 @@ def get_oficios(request):
             'departamentos': oficio.departament.name,
             'remitente': oficio.sender.department,
             'fecha_registro': oficio.register_date,
+            'id': oficio.pk
         })
     return Response({'oficios': response})
 
@@ -35,6 +36,7 @@ def get_departamentos(request):
         response.append({
             'nombre': departamento.name,
             'responsable': departamento.responsible,
+            'id': departamento.pk
         })
     return Response({'departamentos': response})
 
@@ -45,8 +47,9 @@ def get_remitentes(request):
     response = []
     for remitente in remitentes:
         response.append({
-            'nombre': remitente.name,
+            'nombre': remitente.department,
             'responsable': remitente.responsible,
+            'id': remitente.pk
         })
     return Response({'remitentes': response})
 
@@ -87,7 +90,7 @@ def get_remitentes_by_id(request, remitente_id):
     try:
         remitente = Sender.objects.get(pk=remitente_id)
         response = {
-            'nombre': remitente.name,
+            'nombre': remitente.department,
             'responsable': remitente.responsible,
         }
         return Response({'response': 1, 'remitente': response})
@@ -133,37 +136,37 @@ def set_remitente(request):
 @api_view(['POST'])
 def delete_oficio(request):
     try:
-        oficio = Trades.objects.get(request.data['oficio_id'])
+        oficio = Trades.objects.get(pk=request.data['oficio_id'])
         oficio.delete_date = datetime.today()
         oficio.is_active = False
         oficio.save()
         return Response({'response': 1})
     except Trades.DoesNotExist:
-        return Response({'return': 0})
+        return Response({'response': 0})
 
 
 @api_view(['POST'])
 def delete_departamento(request):
     try:
-        departamento = Departments.objects.get(request.data['departamento_id'])
+        departamento = Departments.objects.get(pk=request.data['departamento_id'])
         departamento.delete_date = datetime.today()
         departamento.is_active = False
         departamento.save()
         return Response({'response': 1})
-    except Trades.DoesNotExist:
-        return Response({'return': 0})
+    except Departments.DoesNotExist:
+        return Response({'response': 0})
 
 
 @api_view((['POST']))
 def delete_remitente(request):
     try:
-        remitente = Trades.objects.get(request.data['remitente_id'])
+        remitente = Sender.objects.get(pk=request.data['remitente_id'])
         remitente.delete_date = datetime.today()
         remitente.is_active = False
         remitente.save()
         return Response({'response': 1})
     except Trades.DoesNotExist:
-        return Response({'return': 0})
+        return Response({'response': 0})
 
 
 @api_view(['POST'])
