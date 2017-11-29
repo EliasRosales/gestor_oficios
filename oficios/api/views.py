@@ -63,9 +63,10 @@ def get_oficios_by_id(request, oficio_id):
             'descripcion': oficio.description,
             'folio': oficio.folio,
             'observaciones': oficio.observations,
-            'departamentos': oficio.departament.name,
-            'remitente': oficio.sender.department,
+            'departamentos': oficio.departament.pk,
+            'remitente': oficio.sender.pk,
             'fecha_registro': oficio.register_date,
+            'id': oficio.pk
         }
         return Response({'response': 1, 'oficio': response})
     except Trades.DoesNotExist:
@@ -226,7 +227,58 @@ def update_remitente(request):
 def get_estadistics(request):
     oficios_activos = Trades.objects.filter(is_active=True)
     total_oficios = len(oficios_activos)
-    departamentos_estadisticas = Trades.objects.values('name').annotate(dcount=Count('departament'))
-    remitentes_estadisticas = Trades.objects.values('name').annotate(dcount=Count('sender'))
+    deps = Departments.objects.filter(is_active=True)
+    rems = Sender.objects.filter(is_active=True)
+    departamentos_estadisticas = []
+    remitentes_estadisticas = []
+    for d in deps:
+        departamentos_estadisticas.append({
+            'departamento': d.name,
+            'numero_oficios': 0
+        })
+    for r in rems:
+        remitentes_estadisticas.append({
+            'remitente': r.department,
+            'numero_oficios': 0
+        })
+    for o in oficios_activos:
+        for d in departamentos_estadisticas:
+            if o.departament.name == d['departamento']:
+                d['numero_oficios'] = d['numero_oficios'] + 1
+        for r in remitentes_estadisticas:
+            if o.sender.department == r['remitente']:
+                r['numero_oficios'] = r['numero_oficios'] + 1
     return Response({'oficios_total': total_oficios, 'departamentos_total': departamentos_estadisticas,
                      'remitentes_total': remitentes_estadisticas})
+
+
+@api_view(['POST'])
+def get_estadistics_filtro(request):
+    fecha_inicio = request.data['fecha_inicio']
+    fecha_fin = request.data['fecha_fin']
+    oficios_activos = Trades.objects.filter(is_active=True, date_trades__range=(fecha_inicio, fecha_fin))
+    total_oficios = len(oficios_activos)
+    deps = Departments.objects.filter(is_active=True)
+    rems = Sender.objects.filter(is_active=True)
+    departamentos_estadisticas = []
+    remitentes_estadisticas = []
+    for d in deps:
+        departamentos_estadisticas.append({
+            'departamento': d.name,
+            'numero_oficios': 0
+        })
+    for r in rems:
+        remitentes_estadisticas.append({
+            'remitente': r.department,
+            'numero_oficios': 0
+        })
+    for o in oficios_activos:
+        for d in departamentos_estadisticas:
+            if o.departament.name == d['departamento']:
+                d['numero_oficios'] = d['numero_oficios'] + 1
+        for r in remitentes_estadisticas:
+            if o.sender.department == r['remitente']:
+                r['numero_oficios'] = r['numero_oficios'] + 1
+    return Response({'oficios_total': total_oficios, 'departamentos_total': departamentos_estadisticas,
+                     'remitentes_total': remitentes_estadisticas})
+

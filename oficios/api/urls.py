@@ -3,7 +3,7 @@ from django.conf.urls import url
 from oficios.api.views import get_oficios, get_departamentos, get_remitentes, get_oficios_by_id, \
     get_departamentos_by_id, get_remitentes_by_id, set_oficio, set_departamento, set_remitente, \
     delete_departamento, delete_oficio, delete_remitente, update_departamento, update_oficio, \
-    update_remitente, get_estadistics
+    update_remitente, get_estadistics, get_estadistics_filtro
 
 urlpatterns = [
     url(r'^get_oficios/$', get_oficios),
@@ -22,4 +22,5 @@ urlpatterns = [
     url(r'^update_oficio/$', update_oficio),
     url(r'^update_remitente/$', update_remitente),
     url(r'^get_estadistics/$', get_estadistics),
+    url(r'^get_estadistics_filtro/$', get_estadistics_filtro),
 ]

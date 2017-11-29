@@ -26,7 +26,7 @@ class Trades(models.Model):
     date_trades = models.DateField()
     description = models.TextField()
     folio = models.CharField(max_length=100)
-    observations = models.TextField()
+    observations = models.TextField(blank=True, null=True)
     departament = models.ForeignKey(Departments)
     sender = models.ForeignKey(Sender)
     register_date = models.DateField(auto_now_add=True)
