@@ -7,12 +7,13 @@ from django.db.models import Count
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+import oficios
 from oficios.models import Trades, Departments, Sender
 
 
 @api_view(['GET'])
 def get_oficios(request):
-    oficios = Trades.objects.filter(is_active=True)
+    oficios = Trades.objects.filter(is_active=True).order_by('-date_trades')
     response = []
     for oficio in oficios:
         response.append({
@@ -282,3 +283,26 @@ def get_estadistics_filtro(request):
     return Response({'oficios_total': total_oficios, 'departamentos_total': departamentos_estadisticas,
                      'remitentes_total': remitentes_estadisticas})
 
+
+@api_view(['POST'])
+def get_oficios_filtro(request):
+    fecha_inicio = request.data['fecha_inicio']
+    fecha_fin = request.data['fecha_fin']
+    departament_id = request.data['departamento_id']
+    sender_id = request.data['remitente_id']
+    oficios = Trades.objects.filter(is_active=True,
+                                    date_trades__range=(fecha_inicio, fecha_fin)) or Departments.objects.filter(
+        is_active=True, pk=departament_id) or Sender.objects.filter(is_active=True, pk=sender_id)
+    response = []
+    for oficio in oficios:
+        response.append({
+            'fecha_oficio': oficio.date_trades,
+            'descripcion': oficio.description,
+            'folio': oficio.folio,
+            'observaciones': oficio.observations,
+            'departamentos': oficio.departament.name,
+            'remitente': oficio.sender.department,
+            'fecha_registro': oficio.register_date,
+            'id': oficio.pk
+        })
+    return Response({'oficios': response})
