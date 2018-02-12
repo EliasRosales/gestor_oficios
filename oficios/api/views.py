@@ -290,19 +290,110 @@ def get_oficios_filtro(request):
     fecha_fin = request.data['fecha_fin']
     departament_id = request.data['departamento_id']
     sender_id = request.data['remitente_id']
-    oficios = Trades.objects.filter(is_active=True,
-                                    date_trades__range=(fecha_inicio, fecha_fin)) or Departments.objects.filter(
-        is_active=True, pk=departament_id) or Sender.objects.filter(is_active=True, pk=sender_id)
     response = []
-    for oficio in oficios:
-        response.append({
-            'fecha_oficio': oficio.date_trades,
-            'descripcion': oficio.description,
-            'folio': oficio.folio,
-            'observaciones': oficio.observations,
-            'departamentos': oficio.departament.name,
-            'remitente': oficio.sender.department,
-            'fecha_registro': oficio.register_date,
-            'id': oficio.pk
-        })
+
+    if fecha_inicio != "" and fecha_fin != "" and departament_id != "" and sender_id != "":
+        oficios = Trades.objects.filter(is_active=True, date_trades__range=(fecha_inicio, fecha_fin), departament__exact=departament_id, sender__exact= sender_id)
+        for oficio in oficios:
+            response.append({
+                'fecha_oficio': oficio.date_trades,
+                'descripcion': oficio.description,
+                'folio': oficio.folio,
+                'observaciones': oficio.observations,
+                'departamentos': oficio.departament.name,
+                'remitente': oficio.sender.department,
+                'fecha_registro': oficio.register_date,
+                'id': oficio.pk
+            })
+    else:
+        if fecha_inicio != "" and fecha_fin != "":
+            oficios = Trades.objects.filter(is_active=True, date_trades__range=(fecha_inicio, fecha_fin))
+            for oficio in oficios:
+                response.append({
+                    'fecha_oficio': oficio.date_trades,
+                    'descripcion': oficio.description,
+                    'folio': oficio.folio,
+                    'observaciones': oficio.observations,
+                    'departamentos': oficio.departament.name,
+                    'remitente': oficio.sender.department,
+                    'fecha_registro': oficio.register_date,
+                    'id': oficio.pk
+                })
+        else:
+            if departament_id != "":
+                dep = Trades.objects.filter(is_active=True, departament__exact=departament_id)
+                for oficio in dep:
+                    response.append({
+                        'fecha_oficio': oficio.date_trades,
+                        'descripcion': oficio.description,
+                        'folio': oficio.folio,
+                        'observaciones': oficio.observations,
+                        'departamentos': oficio.departament.name,
+                        'remitente': oficio.sender.department,
+                        'fecha_registro': oficio.register_date,
+                        'id': oficio.pk
+                    })
+            else:
+                if sender_id != "":
+                    rem = Trades.objects.filter(is_active=True, sender__exact=sender_id)
+                    for oficio in rem:
+                        response.append({
+                            'fecha_oficio': oficio.date_trades,
+                            'descripcion': oficio.description,
+                            'folio': oficio.folio,
+                            'observaciones': oficio.observations,
+                            'departamentos': oficio.departament.name,
+                            'remitente': oficio.sender.department,
+                            'fecha_registro': oficio.register_date,
+                            'id': oficio.pk
+                        })
+                else:
+                    if fecha_inicio != "" and fecha_fin != "" and departament_id != "" and sender_id == "":
+                        oficios = Trades.objects.filter(is_active=True, date_trades__range=(fecha_inicio, fecha_fin),
+                                                        departament__exact=departament_id)
+                        for oficio in oficios:
+                            response.append({
+                                'fecha_oficio': oficio.date_trades,
+                                'descripcion': oficio.description,
+                                'folio': oficio.folio,
+                                'observaciones': oficio.observations,
+                                'departamentos': oficio.departament.name,
+                                'remitente': oficio.sender.department,
+                                'fecha_registro': oficio.register_date,
+                                'id': oficio.pk
+                            })
+                    else:
+                        if fecha_inicio != "" and fecha_fin != "" and departament_id == "" and sender_id != "":
+                            oficios = Trades.objects.filter(is_active=True,
+                                                            date_trades__range=(fecha_inicio, fecha_fin),
+                                                            sender__exact=sender_id)
+                            for oficio in oficios:
+                                response.append({
+                                    'fecha_oficio': oficio.date_trades,
+                                    'descripcion': oficio.description,
+                                    'folio': oficio.folio,
+                                    'observaciones': oficio.observations,
+                                    'departamentos': oficio.departament.name,
+                                    'remitente': oficio.sender.department,
+                                    'fecha_registro': oficio.register_date,
+                                    'id': oficio.pk
+                                })
+                        else:
+                            if fecha_inicio == "" and fecha_fin == "" and departament_id != "" and sender_id != "":
+                                oficios = Trades.objects.filter(is_active=True,
+                                                                departament__exact=departament_id,
+                                                                sender__exact=sender_id)
+                                for oficio in oficios:
+                                    response.append({
+                                        'fecha_oficio': oficio.date_trades,
+                                        'descripcion': oficio.description,
+                                        'folio': oficio.folio,
+                                        'observaciones': oficio.observations,
+                                        'departamentos': oficio.departament.name,
+                                        'remitente': oficio.sender.department,
+                                        'fecha_registro': oficio.register_date,
+                                        'id': oficio.pk
+                                    })
+
+
     return Response({'oficios': response})
