@@ -10,7 +10,6 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from purchases.models import Rate
 from users.models import User
 
 @api_view(['POST'])
@@ -28,31 +27,11 @@ def login(request):
                     'data': {
                         'id': user.pk,
                         'name': user.name,
-                        'last_name': user.last_name,
-                        'nickname': user.nickname,
-                        'mail': user.mail,
-                        'user_type': user.user_type
+                        'last_name': user.last_name
                     }
                 })
             else:
                 return Response({'response': 0, 'errors': 'the user has been deleted'})
         except ObjectDoesNotExist:
-            try:
-                user = User.objects.get(mail=username, password=password)
-                if user.is_active:
-                    return Response({
-                        'response': 1,
-                        'data': {
-                            'id': user.pk,
-                            'name': user.name,
-                            'last_name': user.last_name,
-                            'nickname': user.nickname,
-                            'mail': user.mail,
-                            'user_type': user.user_type
-                        }
-                    })
-                else:
-                    return Response({'response': 0, 'errors': 'the user has been deleted'})
-            except ObjectDoesNotExist:
-                return Response({'response': 0, 'errors': 'Username or password incorrect'})
+            return Response({'response': 0, 'errors': 'Username or password incorrect'})
 
